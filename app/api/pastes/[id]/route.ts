@@ -3,9 +3,10 @@ import { now } from "@/lib/time";
 
 export async function GET(
   req: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
-  const key = `paste:${params.id}`;
+  const { id } = await params;
+  const key = `paste:${id}`;
   const paste = await kv.get<any>(key);
 
   if (!paste) {

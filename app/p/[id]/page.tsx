@@ -11,9 +11,10 @@ async function getPaste(id: string) {
 export default async function Page({
   params,
 }: {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }) {
-  const paste = await getPaste(params.id);
+  const { id } = await params;
+  const paste = await getPaste(id);
 
   if (!paste) {
     return <h1>404 – Paste not found</h1>;
