@@ -1,30 +1,54 @@
-import { kv } from "@/lib/kv";
-import { now } from "@/lib/time";
+import { NextResponse } from "next/server";
+import { kv } from "@vercel/kv";
+import crypto from "crypto";
+import { nowMs } from "@/lib/time";
+
+type Paste = {
+  content: string;
+  remaining_views: number | null;
+  expires_at: number | null;
+};
 
 export async function POST(req: Request) {
-  const body = await req.json();
-  const { content, ttl_seconds, max_views } = body;
-
-  if (!content || typeof content !== "string") {
-    return new Response("Invalid content", { status: 400 });
+  const body = await req.json().catch(() => null);
+  if (!body || typeof body.content !== "string" || body.content.trim() === "") {
+    return NextResponse.json({ error: "Invalid content" }, { status: 400 });
   }
 
-  const id = crypto.randomUUID().slice(0, 8);
+  const ttl =
+    body.ttl_seconds !== undefined
+      ? Number(body.ttl_seconds)
+      : null;
 
-  const expiresAt = ttl_seconds
-    ? now(req) + ttl_seconds * 1000
-    : null;
+  const maxViews =
+    body.max_views !== undefined
+      ? Number(body.max_views)
+      : null;
 
-  const data = {
-    content,
-    expires_at: expiresAt,
-    remaining_views: max_views ?? null,
+  if (ttl !== null && (!Number.isInteger(ttl) || ttl < 1)) {
+    return NextResponse.json({ error: "Invalid ttl_seconds" }, { status: 400 });
+  }
+
+  if (maxViews !== null && (!Number.isInteger(maxViews) || maxViews < 1)) {
+    return NextResponse.json({ error: "Invalid max_views" }, { status: 400 });
+  }
+
+  const id = crypto.randomUUID();
+  const now = nowMs(req);
+
+  const paste: Paste = {
+    content: body.content,
+    remaining_views: maxViews,
+    expires_at: ttl ? now + ttl * 1000 : null,
   };
 
-  await kv.set(`paste:${id}`, data);
+  await kv.set(`paste:${id}`, paste);
 
-  return Response.json({
-    id,
-    url: `${process.env.NEXT_PUBLIC_BASE_URL}/p/${id}`,
-  });
+  return NextResponse.json(
+    {
+      id,
+      url: `${process.env.NEXT_PUBLIC_BASE_URL}/p/${id}`,
+    },
+    { status: 201 }
+  );
 }

@@ -1,6 +1,11 @@
-import { kv } from "@/lib/kv";
+import { NextResponse } from "next/server";
+import { kv } from "@vercel/kv";
 
 export async function GET() {
-  await kv.set("health", "ok");
-  return Response.json({ ok: true });
+  try {
+    await kv.ping();
+    return NextResponse.json({ ok: true }, { status: 200 });
+  } catch {
+    return NextResponse.json({ ok: false }, { status: 500 });
+  }
 }

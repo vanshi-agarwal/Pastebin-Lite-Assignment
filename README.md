@@ -25,6 +25,14 @@ The goal of this project is to demonstrate backend logic, API design, and deploy
 
 ---
 
+## Deterministic Testing
+
+When `TEST_MODE=1` is set, the application reads the current time from the
+`x-test-now-ms` request header to ensure deterministic expiry testing.
+If the header is absent, real system time is used.
+
+---
+
 ## ⚙️ How It Works
 
 1. A user enters text and submits the form

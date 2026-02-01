@@ -1,28 +1,18 @@
-async function getPaste(id: string) {
-  const res = await fetch(
-    `${process.env.NEXT_PUBLIC_BASE_URL}/api/pastes/${id}`,
-    { cache: "no-store" }
-  );
+import { kv } from "@vercel/kv";
+import { notFound } from "next/navigation";
 
-  if (!res.ok) return null;
-  return res.json();
-}
-
-export default async function Page({
+export default async function PastePage({
   params,
 }: {
-  params: Promise<{ id: string }>;
+  params: { id: string };
 }) {
-  const { id } = await params;
-  const paste = await getPaste(id);
+  const paste = await kv.get(`paste:${params.id}`) as any;
 
-  if (!paste) {
-    return <h1>404 – Paste not found</h1>;
-  }
+  if (!paste) notFound();
 
   return (
-    <pre style={{ whiteSpace: "pre-wrap" }}>
+    <main style={{ padding: "2rem", whiteSpace: "pre-wrap" }}>
       {paste.content}
-    </pre>
+    </main>
   );
 }

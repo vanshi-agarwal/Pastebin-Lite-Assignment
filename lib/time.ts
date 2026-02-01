@@ -1,7 +1,12 @@
-export function now(req?: Request) {
+export function nowMs(req?: Request): number {
   if (process.env.TEST_MODE === "1" && req) {
-    const h = req.headers.get("x-test-now-ms");
-    if (h) return Number(h);
+    const header = req.headers.get("x-test-now-ms");
+    if (header) {
+      const parsed = Number(header);
+      if (!Number.isNaN(parsed)) {
+        return parsed;
+      }
+    }
   }
   return Date.now();
 }
