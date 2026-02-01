@@ -11,9 +11,9 @@ async function getPaste(id: string) {
 export default async function Page({
   params,
 }: {
-  params: Promise<{ id: string }>;
+  params: { id: string };
 }) {
-  const { id } = await params;
+  const { id } = params;
   const paste = await getPaste(id);
 
   if (!paste) {
