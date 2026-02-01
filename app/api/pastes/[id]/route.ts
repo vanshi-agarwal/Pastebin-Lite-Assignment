@@ -7,7 +7,7 @@ export async function GET(
 ) {
   const { id } = await params;
   const key = `paste:${id}`;
-  const paste = await kv.get<any>(key);
+  const paste = await kv.get(key) as any;
 
   if (!paste) {
     return new Response("Not found", { status: 404 });
