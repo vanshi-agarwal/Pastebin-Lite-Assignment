@@ -1,11 +1,12 @@
 import { NextResponse } from "next/server";
-import { kv } from "@vercel/kv";
+import { kv } from "@/lib/kv";
 
 export async function GET(
   _req: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
-  const key = `paste:${params.id}`;
+  const { id } = await params; // Add await here
+  const key = `paste:${id}`;
   const paste = await kv.get(key) as any;
 
   if (!paste) {
